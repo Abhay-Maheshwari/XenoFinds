@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: shopify_user
+      POSTGRES_PASSWORD: shopify_password
+      POSTGRES_DB: shopify_data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: shopify_data
+      DB_USER: shopify_user
+      DB_PASSWORD: shopify_password
+      JWT_SECRET: xeno_fde_internship_secret_key_2025
+      JWT_EXPIRES_IN: 24h
+      SYNC_INTERVAL_MINUTES: 60
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:3000/api
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
